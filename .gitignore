@@ -25,3 +25,10 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Local database files
+*.sqlite
+*.sqlite3
+*.db
+*.sqlite-wal
+*.sqlite-shm

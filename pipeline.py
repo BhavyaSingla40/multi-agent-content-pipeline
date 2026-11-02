@@ -15,7 +15,8 @@ from tavily import TavilyClient
 
 from langgraph.graph import StateGraph, START, END
 from langgraph.types import interrupt, Command
-from langgraph.checkpoint.memory import InMemorySaver
+import sqlite3
+from langgraph.checkpoint.sqlite import SqliteSaver
 
 
 # ==========================================
@@ -443,7 +444,13 @@ builder.add_conditional_edges(
 builder.add_edge("editor", "human_review")
 builder.add_edge("save_article", END)
 
-memory = InMemorySaver()
+# Persistent checkpoint database
+connection = sqlite3.connect(
+    "checkpoints.sqlite",
+    check_same_thread=False
+)
+
+memory = SqliteSaver(connection)
 
 workflow = builder.compile(
     checkpointer=memory
