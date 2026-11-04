@@ -615,13 +615,121 @@ if st.session_state.stage in (
                 "No verification report available."
             )
         )
+        claim_results = state.get("claim_results", [])
+
+    if claim_results:
+        st.subheader("Claim-by-Claim Verification")
+
+        for item in claim_results:
+
+            verdict = item["verdict"]
+
+            if verdict == "SUPPORTED":
+                icon = "✅"
+            elif verdict == "CONTRADICTED":
+                icon = "❌"
+            else:
+                icon = "⚠️"
+
+            with st.expander(
+                f"{icon} Claim {item['claim_id']}: "
+                f"{item['claim'][:70]}"
+            ):
+                st.write("**Statement:**", item["claim"])
+                st.write("**Verdict:**", verdict)
+                st.write("**Explanation:**", item["reason"])
+
+                for source in item.get("sources", []):
+                    st.markdown(
+                        f"- [{source['title']}]({source['url']})"
+                    )
 
         st.caption(
             "Automated fact-checking can make mistakes. "
             "Human verification remains important."
         )
 
+        
+
+
     st.divider()
+
+# ==========================================
+# CLAIM-BY-CLAIM VERIFICATION RESULTS
+# ==========================================
+
+claim_results = st.session_state.result.get("claim_results", [])
+if claim_results:
+
+    st.subheader("Claim-by-Claim Verification")
+
+    supported = sum(
+        item["verdict"] == "SUPPORTED"
+        for item in claim_results
+    )
+
+    contradicted = sum(
+        item["verdict"] == "CONTRADICTED"
+        for item in claim_results
+    )
+
+    uncertain = sum(
+        item["verdict"] == "INSUFFICIENT_EVIDENCE"
+        for item in claim_results
+    )
+
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric("Supported", supported)
+    col2.metric("Contradicted", contradicted)
+    col3.metric("Uncertain", uncertain)
+
+    st.divider()
+
+    for item in claim_results:
+
+        verdict = item["verdict"]
+
+        if verdict == "SUPPORTED":
+            status_icon = "✅"
+        elif verdict == "CONTRADICTED":
+            status_icon = "❌"
+        else:
+            status_icon = "⚠️"
+
+        with st.expander(
+            f"{status_icon} Claim {item['claim_id']}: "
+            f"{item['claim'][:70]}"
+        ):
+
+            st.markdown(
+                f"**Statement:** {item['claim']}"
+            )
+
+            st.markdown(
+                f"**Verdict:** {verdict}"
+            )
+
+            st.markdown(
+                f"**Explanation:** {item['reason']}"
+            )
+
+            if item["sources"]:
+
+                st.markdown("**Evidence Sources:**")
+
+                for source in item["sources"]:
+                    st.markdown(
+                        f"- [{source['title']}]"
+                        f"({source['url']})"
+                    )
+
+            else:
+                st.warning(
+                    "No source evidence was attached "
+                    "to this claim."
+                )
+
 
 
 # ============================================================
